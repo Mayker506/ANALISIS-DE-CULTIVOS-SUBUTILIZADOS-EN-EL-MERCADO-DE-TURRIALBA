@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Trabajo Final</title>
+
+<script src="codigo_final_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="codigo_final_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="codigo_final_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="codigo_final_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="codigo_final_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="codigo_final_files/navigation-1.1/tabsets.js"></script>
+<link href="codigo_final_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="codigo_final_files/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Trabajo Final</h1>
+
+</div>
+
+
+<div id="librerias" class="section level3">
+<h3>Librerias</h3>
+<pre class="r"><code>suppressPackageStartupMessages(library(sf))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(sf))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(sqldf))
+suppressPackageStartupMessages(library(leaflet))
+suppressPackageStartupMessages(library(raster))
+suppressPackageStartupMessages(library(spData))
+suppressPackageStartupMessages(library(spDataLarge))
+suppressPackageStartupMessages(library(tmap))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(mapview))
+suppressPackageStartupMessages(library(rpart))
+suppressPackageStartupMessages(library(rpart.plot))</code></pre>
+</div>
+<div id="lectura-de-los-datos" class="section level3">
+<h3>Lectura de los datos</h3>
+<pre class="r"><code>NUS_SPF &lt;- st_read(&quot;C:/Users/User/Documents/Mayker/Maestria Profesional/Estadistica Espacial/Proyecto de investigacion/Trabajo final/NUS.shp&quot;) </code></pre>
+<pre><code>## Reading layer `NUS&#39; from data source `C:\Users\User\Documents\Mayker\Maestria Profesional\Estadistica Espacial\Proyecto de investigacion\Trabajo final\NUS.shp&#39; using driver `ESRI Shapefile&#39;
+## Simple feature collection with 27 features and 2 fields
+## geometry type:  POINT
+## dimension:      XY
+## bbox:           xmin: -84.02048 ymin: 9.665031 xmax: -83.46707 ymax: 10.12226
+## geographic CRS: WGS 84</code></pre>
+<pre class="r"><code>vendedores_data &lt;- read_delim(&quot;~/Mayker/Maestria Profesional/Estadistica Espacial/Proyecto de investigacion/data_Trabajo/vendedores_data.csv&quot;, 
+                              &quot;;&quot;, escape_double = FALSE, locale = locale(encoding = &quot;WINDOWS-1252&quot;, asciify = TRUE,decimal_mark = &quot;,&quot;), trim_ws = TRUE)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   Vendedor_ID = col_double(),
+##   Puesto = col_double(),
+##   Producto_mas_vendido = col_character(),
+##   Direccion = col_character(),
+##   Distrito = col_character(),
+##   canton = col_character(),
+##   Vendedor = col_character(),
+##   Vendedor_dico = col_double(),
+##   Origen_reventa = col_character(),
+##   `otros canales_de_venta` = col_character(),
+##   `Tamaño de finca (ha)` = col_double(),
+##   Ingresosde_finca_venta = col_double(),
+##   Ingresosde_finca_venta_dico = col_double(),
+##   Ingresos_mercado_por = col_double(),
+##   Ingresos_mercado_por_dico = col_double(),
+##   Comentario = col_character(),
+##   otra_actividad = col_double()
+## )</code></pre>
+<pre class="r"><code>vendedores_data=as.data.frame(vendedores_data)
+
+Tiempos_distancia &lt;- read_delim(&quot;~/Mayker/Maestria Profesional/Estadistica Espacial/Proyecto de investigacion/Tiempos_distancia_subir.csv&quot;, 
+                                &quot;;&quot;, escape_double = FALSE, locale = locale(decimal_mark = &quot;,&quot;), 
+                                trim_ws = TRUE)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   Direccion = col_character(),
+##   Tiempo_min = col_double(),
+##   Distancia = col_double()
+## )</code></pre>
+<pre class="r"><code>Tiempos_distancia=as.data.frame(Tiempos_distancia)
+
+Productos_de_los_vendedores &lt;- read_delim(&quot;~/Mayker/Maestria Profesional/Estadistica Espacial/Proyecto de investigacion/data_Trabajo/Productos de los vendedores.csv&quot;, 
+                                          &quot;;&quot;, escape_double = FALSE, locale = locale(encoding = &quot;ASCII&quot;, 
+                                                                                      asciify = TRUE), trim_ws = TRUE)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   Vendedor_ID = col_double(),
+##   Productos = col_character(),
+##   Tipo_de_cultivo = col_character(),
+##   produccion = col_character(),
+##   NUS_segun_productor = col_double(),
+##   Maneras_preparacion = col_double(),
+##   `por_cosecha_ vende(NUS)` = col_double(),
+##   Sexo_comprador = col_character(),
+##   Edad_comprador = col_character(),
+##   Regularidad = col_character(),
+##   identificador_NUS = col_double()
+## )</code></pre>
+<pre class="r"><code>Productos_de_los_vendedores=as.data.frame(Productos_de_los_vendedores)
+
+Vendor_originalProducer_por_nus &lt;- read_delim(&quot;~/Mayker/Maestria Profesional/Estadistica Espacial/Proyecto de investigacion/data_Trabajo/Vendor_originalProducer_por_nus.csv&quot;, 
+                                              &quot;;&quot;, escape_double = FALSE, locale = locale(decimal_mark = &quot;,&quot;), 
+                                              trim_ws = TRUE)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   Id_vendedor = col_double(),
+##   cantidad_nus = col_double(),
+##   total_productos = col_double(),
+##   por_nus = col_double(),
+##   nus_vendedor = col_double()
+## )</code></pre>
+<pre class="r"><code>Vendor_originalProducer_por_nus=as.data.frame(Vendor_originalProducer_por_nus)</code></pre>
+</div>
+<div id="unificación-de-las-tablas" class="section level3">
+<h3>Unificación de las tablas</h3>
+<pre class="r"><code>data_comple &lt;- left_join(x = vendedores_data,
+                         y = NUS_SPF,
+                         by = c(&quot;Direccion&quot; = &quot;Name&quot;))
+
+data_comple=as.data.frame(data_comple)
+data_comple=data_comple %&gt;% filter(!Direccion==&#39;nd&#39;)
+
+data_comple &lt;- left_join(x = data_comple,
+                         y = Tiempos_distancia,
+                         by=c(&#39;Direccion&#39;=&#39;Direccion&#39;))
+
+data_comple=as.data.frame(data_comple)
+
+
+data=sqldf(&quot;select Vendedor_ID,
+              max(identificador_NUS) as nus  
+      from Productos_de_los_vendedores
+      group by Vendedor_ID&quot;)
+
+data1=left_join(x=data,
+               y=data_comple,
+               by=c(&#39;Vendedor_ID&#39;=&#39;Vendedor_ID&#39;))
+
+data1=data1 %&gt;% mutate(hec_finca=as.numeric(`Tamaño de finca (ha)`) )
+data1=data1 %&gt;% mutate(nus=as.factor(nus))
+
+
+data1=left_join(x=data1,
+             y=Vendor_originalProducer_por_nus,
+             by=c(&#39;Vendedor_ID&#39;=&#39;Id_vendedor&#39;))
+
+data1=data1 %&gt;% mutate(nus_vendedor=as.factor(nus_vendedor))
+data1=data1 %&gt;% mutate(Vendedor=as.factor(Vendedor))
+
+data1=data1 %&gt;% mutate(hectareas_dico=case_when(hec_finca&gt;5~&#39;1&#39;,
+                                                TRUE~&#39;0&#39;))</code></pre>
+</div>
+<div id="imputación-de-los-na" class="section level3">
+<h3>Imputación de los NA</h3>
+<pre class="r"><code>## los por nus se imputan con el promedio
+
+data1=data1 %&gt;% mutate(por_nus=case_when(is.na(por_nus)==TRUE~mean(data1$por_nus, na.rm = TRUE),
+                                          TRUE~por_nus ))
+
+## La cantidad total de productos se imputan se imputan con el promedio
+
+data1=data1 %&gt;% mutate(total_productos=case_when(is.na(total_productos )==TRUE~mean(data1$total_productos , na.rm = TRUE),
+                                          TRUE~total_productos  ))
+
+## La cantidad total de nus se imputan se imputan con el promedio
+
+data1=data1 %&gt;% mutate(cantidad_nus=case_when(is.na(cantidad_nus )==TRUE~mean(data1$cantidad_nus , na.rm = TRUE),
+                                          TRUE~cantidad_nus  ))
+
+## Se imputa la cantidad de hectareas promedio
+
+data1=data1 %&gt;% mutate(hec_finca=case_when(is.na(hec_finca )==TRUE~mean(data1$hec_finca , na.rm = TRUE),
+                                          TRUE~hec_finca  ))
+
+data1=data1 %&gt;% mutate(nus_vendedor=case_when(is.na(nus_vendedor)==TRUE~nus,
+                                          TRUE~nus_vendedor ))</code></pre>
+</div>
+<div id="construcción-del-indicador-de-diversicación" class="section level3">
+<h3>Construcción del indicador de diversicación</h3>
+<pre class="r"><code>data1=data1 %&gt;% mutate(ind_pro_tot=( (total_productos-min(data1$total_productos))/(max(data1$total_productos)-min(data1$total_productos)) ) )
+
+data1=data1 %&gt;% mutate(ind_pro_nus=cantidad_nus/(max(data1$cantidad_nus)-min(data1$cantidad_nus) ))
+
+data1=data1 %&gt;% mutate(indicador_diver=(ind_pro_tot+ind_pro_nus))
+
+data1=data1 %&gt;% filter(is.na(Vendedor)==FALSE)</code></pre>
+</div>
+<div id="contrución-del-mapa" class="section level3">
+<h3>Contrución del mapa</h3>
+<pre class="r"><code>#mapview(NUS_SPF)</code></pre>
+</div>
+<div id="análisis-descriptivo" class="section level3">
+<h3>Análisis descriptivo</h3>
+</div>
+<div id="arboles-de-clasificación" class="section level2">
+<h2>Arboles de clasificación</h2>
+<p>Arbol para los cultivos subutilizados clasificados por le investigador del CATIE</p>
+<pre class="r"><code>arbol_1 &lt;- rpart(nus ~ Distancia+hec_finca+Vendedor_dico+Ingresosde_finca_venta_dico+Ingresos_mercado_por_dico, data = data1)
+
+rpart.plot(arbol_1, type=0, extra=0,  
+           box.palette = c(&quot;lightgreen&quot;, &quot;pink&quot;))</code></pre>
+<p><img src="codigo_final_files/figure-html/unnamed-chunk-7-1.png" /><!-- --></p>
+<p>Arbol para los cultivos subutilizados generados por los agricultores</p>
+<pre class="r"><code>arbol_2 &lt;- rpart(nus_vendedor ~ Distancia+hec_finca+Vendedor_dico+Ingresosde_finca_venta_dico+Ingresos_mercado_por_dico+otra_actividad, data = data1)
+
+rpart.plot(arbol_2, type=0, extra=0,  
+           box.palette = c(&quot;lightgreen&quot;, &quot;pink&quot;))</code></pre>
+<p><img src="codigo_final_files/figure-html/unnamed-chunk-8-1.png" /><!-- --></p>
+<p>Modelos de arboles de regresión</p>
+<p>Cantidad de cultivos subutilizados</p>
+<pre class="r"><code>arb &lt;- rpart(cantidad_nus ~ Distancia+hec_finca+Vendedor_dico+Ingresosde_finca_venta_dico+Ingresos_mercado_por_dico+otra_actividad, data=data1)
+
+rpart.plot(arb, type=0, extra=0,  
+           box.palette = c(&quot;lightgreen&quot;, &quot;pink&quot;))</code></pre>
+<p><img src="codigo_final_files/figure-html/unnamed-chunk-9-1.png" /><!-- --></p>
+<p>Porcentaje de cultivos subutilizados</p>
+<pre class="r"><code>arb2 &lt;- rpart(por_nus ~ Distancia+hec_finca+Vendedor_dico+Ingresosde_finca_venta_dico+Ingresos_mercado_por_dico, data=data1)
+
+
+
+rpart.plot(arb2, type=0, extra=0,  
+           box.palette = c(&quot;lightgreen&quot;, &quot;pink&quot;))</code></pre>
+<p><img src="codigo_final_files/figure-html/unnamed-chunk-10-1.png" /><!-- --></p>
+<p>Porcentaje de los cultivos subutilizados en relación al total</p>
+<pre class="r"><code>arb3 &lt;- rpart(por_nus ~ Distancia+hec_finca+Vendedor_dico+Ingresos_mercado_por_dico+Ingresosde_finca_venta, data=data1)
+
+
+rpart.plot(arb3, type=0, extra=0,  
+           box.palette = c(&quot;lightgreen&quot;, &quot;pink&quot;))</code></pre>
+<p><img src="codigo_final_files/figure-html/unnamed-chunk-11-1.png" /><!-- --></p>
+<p>Modelo con el indicador de diversificación</p>
+<pre class="r"><code>arb4 &lt;- rpart(indicador_diver ~ Distancia+hec_finca+Vendedor_dico+Ingresosde_finca_venta_dico+Ingresos_mercado_por_dico, data=data1)
+
+rpart.plot(arb4, type=0, extra=0,  
+           box.palette = c(&quot;lightgreen&quot;, &quot;pink&quot;))</code></pre>
+<p><img src="codigo_final_files/figure-html/unnamed-chunk-12-1.png" /><!-- --></p>
+<div id="modelos-de-clasificacion-tipo-regresión-logistica" class="section level3">
+<h3>Modelos de clasificacion tipo regresión Logistica</h3>
+<p>Modelo 1: Con loS cultivos subutilizados según el experto</p>
+<pre class="r"><code>modelo_logistico &lt;- glm(nus ~ Tiempo_min+Distancia+hec_finca+Vendedor+otra_actividad+hectareas_dico*Distancia, data = data1, family = &quot;binomial&quot;)
+#modelo_logistico
+summary(modelo_logistico)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = nus ~ Tiempo_min + Distancia + hec_finca + Vendedor + 
+##     otra_actividad + hectareas_dico * Distancia, family = &quot;binomial&quot;, 
+##     data = data1)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -2.09106   0.00014   0.51822   0.62031   1.18115  
+## 
+## Coefficients:
+##                             Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept)                  0.76616    1.15429   0.664    0.507
+## Tiempo_min                  -0.03454    0.09440  -0.366    0.714
+## Distancia                    0.06149    0.12745   0.482    0.629
+## hec_finca                    0.19870    0.27420   0.725    0.469
+## VendedorI                   -1.31988    0.87078  -1.516    0.130
+## VendedorM                    0.70768    0.68092   1.039    0.299
+## otra_actividad               0.37537    0.86238   0.435    0.663
+## hectareas_dico1             16.36579 2493.33409   0.007    0.995
+## Distancia:hectareas_dico1   -0.02252   80.49093   0.000    1.000
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 86.141  on 94  degrees of freedom
+## Residual deviance: 74.570  on 86  degrees of freedom
+## AIC: 92.57
+## 
+## Number of Fisher Scoring iterations: 17</code></pre>
+<p>Modelo 2: cultivos subutilizado clasificados según los vendedores</p>
+<pre class="r"><code>modelo_logistico2 &lt;- glm(nus_vendedor ~ Distancia+hec_finca+Vendedor_dico+Ingresosde_finca_venta_dico+Ingresos_mercado_por_dico+otra_actividad, data = data1, family = &quot;binomial&quot;)
+
+summary(modelo_logistico2)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = nus_vendedor ~ Distancia + hec_finca + Vendedor_dico + 
+##     Ingresosde_finca_venta_dico + Ingresos_mercado_por_dico + 
+##     otra_actividad, family = &quot;binomial&quot;, data = data1)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.7879  -0.9900  -0.5956   1.0712   1.7171  
+## 
+## Coefficients:
+##                              Estimate Std. Error z value Pr(&gt;|z|)  
+## (Intercept)                 -1.137639   0.729388  -1.560   0.1188  
+## Distancia                   -0.004753   0.016089  -0.295   0.7677  
+## hec_finca                    0.212218   0.111666   1.900   0.0574 .
+## Vendedor_dico                0.201929   0.474700   0.425   0.6706  
+## Ingresosde_finca_venta_dico  0.854271   0.666544   1.282   0.2000  
+## Ingresos_mercado_por_dico   -0.664748   0.471221  -1.411   0.1583  
+## otra_actividad               0.314720   0.592975   0.531   0.5956  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 131.18  on 94  degrees of freedom
+## Residual deviance: 118.28  on 88  degrees of freedom
+## AIC: 132.28
+## 
+## Number of Fisher Scoring iterations: 4</code></pre>
+</div>
+<div id="modelos-de-regresion" class="section level3">
+<h3>Modelos de regresion</h3>
+<pre class="r"><code>regresion &lt;- lm(por_nus ~ Distancia+Vendedor_dico+Ingresosde_finca_venta_dico+Ingresos_mercado_por_dico+hec_finca+otra_actividad, data = data1)
+
+summary(regresion)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = por_nus ~ Distancia + Vendedor_dico + Ingresosde_finca_venta_dico + 
+##     Ingresos_mercado_por_dico + hec_finca + otra_actividad, data = data1)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.32546 -0.10537  0.00869  0.09229  0.39224 
+## 
+## Coefficients:
+##                               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                  0.1158877  0.0482865   2.400   0.0185 *  
+## Distancia                    0.0008272  0.0011213   0.738   0.4627    
+## Vendedor_dico                0.0104875  0.0337350   0.311   0.7566    
+## Ingresosde_finca_venta_dico  0.0483606  0.0437806   1.105   0.2723    
+## Ingresos_mercado_por_dico   -0.0158605  0.0333709  -0.475   0.6358    
+## hec_finca                    0.0278619  0.0058829   4.736 8.29e-06 ***
+## otra_actividad              -0.0086783  0.0418743  -0.207   0.8363    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.1502 on 88 degrees of freedom
+## Multiple R-squared:  0.2613, Adjusted R-squared:  0.2109 
+## F-statistic: 5.188 on 6 and 88 DF,  p-value: 0.0001308</code></pre>
+<p>Cantidad de nus con de modelo de regresión</p>
+<p>Cantidad de productos subutilizados con de modelo de Posisson</p>
+<pre class="r"><code>mod.logpois=glm(cantidad_nus~Distancia+hec_finca+Vendedor_dico+otra_actividad+Ingresos_mercado_por_dico+Ingresosde_finca_venta_dico, family=poisson, data = data1)</code></pre>
+<pre><code>## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782
+
+## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782
+
+## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782
+
+## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782
+
+## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782
+
+## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782
+
+## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782
+
+## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782</code></pre>
+<pre class="r"><code>summary(mod.logpois)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = cantidad_nus ~ Distancia + hec_finca + Vendedor_dico + 
+##     otra_actividad + Ingresos_mercado_por_dico + Ingresosde_finca_venta_dico, 
+##     family = poisson, data = data1)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.5996  -0.8365  -0.2341   0.6724   3.9743  
+## 
+## Coefficients:
+##                              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)                  0.482955   0.221942   2.176   0.0296 *  
+## Distancia                    0.001938   0.004622   0.419   0.6751    
+## hec_finca                    0.072936   0.017859   4.084 4.42e-05 ***
+## Vendedor_dico                0.169828   0.145917   1.164   0.2445    
+## otra_actividad               0.330169   0.159902   2.065   0.0389 *  
+## Ingresos_mercado_por_dico   -0.295621   0.137975  -2.143   0.0321 *  
+## Ingresosde_finca_venta_dico  0.173384   0.216085   0.802   0.4223    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 183.89  on 94  degrees of freedom
+## Residual deviance: 149.97  on 88  degrees of freedom
+## AIC: Inf
+## 
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>exp(coef(mod.logpois))</code></pre>
+<pre><code>##                 (Intercept)                   Distancia 
+##                   1.6208575                   1.0019396 
+##                   hec_finca               Vendedor_dico 
+##                   1.0756622                   1.1851013 
+##              otra_actividad   Ingresos_mercado_por_dico 
+##                   1.3912032                   0.7440697 
+## Ingresosde_finca_venta_dico 
+##                   1.1893226</code></pre>
+<pre class="r"><code>plot(mod.logpois)</code></pre>
+<p><img src="codigo_final_files/figure-html/unnamed-chunk-17-1.png" /><!-- --><img src="codigo_final_files/figure-html/unnamed-chunk-17-2.png" /><!-- --><img src="codigo_final_files/figure-html/unnamed-chunk-17-3.png" /><!-- --><img src="codigo_final_files/figure-html/unnamed-chunk-17-4.png" /><!-- --></p>
+<pre class="r"><code>data2=data1[-c(67,49),]
+
+mod.logpois1=glm(cantidad_nus~Distancia+hec_finca+Vendedor_dico+otra_actividad+Ingresos_mercado_por_dico+Ingresosde_finca_venta_dico, family=poisson, data = data2)</code></pre>
+<pre><code>## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782
+
+## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782
+
+## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782
+
+## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782
+
+## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782
+
+## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782
+
+## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782
+
+## Warning in dpois(y, mu, log = TRUE): non-integer x = 2.436782</code></pre>
+<pre class="r"><code>summary(mod.logpois1)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = cantidad_nus ~ Distancia + hec_finca + Vendedor_dico + 
+##     otra_actividad + Ingresos_mercado_por_dico + Ingresosde_finca_venta_dico, 
+##     family = poisson, data = data2)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.3282  -0.7597  -0.2173   0.5129   2.7754  
+## 
+## Coefficients:
+##                               Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)                  0.5082674  0.2287159   2.222   0.0263 *  
+## Distancia                   -0.0067936  0.0058897  -1.153   0.2487    
+## hec_finca                    0.0753384  0.0187234   4.024 5.73e-05 ***
+## Vendedor_dico               -0.0008018  0.1541554  -0.005   0.9958    
+## otra_actividad               0.1514966  0.1786347   0.848   0.3964    
+## Ingresos_mercado_por_dico   -0.1013935  0.1489713  -0.681   0.4961    
+## Ingresosde_finca_venta_dico  0.2066217  0.2180603   0.948   0.3434    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 136.43  on 92  degrees of freedom
+## Residual deviance: 117.91  on 86  degrees of freedom
+## AIC: Inf
+## 
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>#exp(coef(mod.logpois))</code></pre>
+<p>Modelo de regresion con el indicador de diversificacion</p>
+<pre class="r"><code>regresion3 &lt;- lm(indicador_diver ~Distancia+hec_finca+Vendedor_dico+Ingresosde_finca_venta_dico+Ingresos_mercado_por_dico, data = data1)
+summary(regresion3)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = indicador_diver ~ Distancia + hec_finca + Vendedor_dico + 
+##     Ingresosde_finca_venta_dico + Ingresos_mercado_por_dico, 
+##     data = data1)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.36900 -0.18645 -0.06384  0.09051  1.07831 
+## 
+## Coefficients:
+##                               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                  0.3539545  0.0878190   4.031 0.000117 ***
+## Distancia                   -0.0008709  0.0020753  -0.420 0.675746    
+## hec_finca                    0.0237818  0.0110243   2.157 0.033683 *  
+## Vendedor_dico                0.0060350  0.0632594   0.095 0.924210    
+## Ingresosde_finca_venta_dico  0.0329259  0.0819095   0.402 0.688664    
+## Ingresos_mercado_por_dico   -0.1023464  0.0611987  -1.672 0.097965 .  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.2817 on 89 degrees of freedom
+## Multiple R-squared:  0.09113,    Adjusted R-squared:  0.04007 
+## F-statistic: 1.785 on 5 and 89 DF,  p-value: 0.1241</code></pre>
+<p>`</p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
