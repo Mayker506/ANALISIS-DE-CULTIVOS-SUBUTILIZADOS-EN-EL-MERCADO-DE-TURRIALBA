@@ -1,0 +1,515 @@
+---
+title: "Análisis de espacial-Productos subutilizados"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE,  results = "hide"}
+suppressPackageStartupMessages(library(sf))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(sf))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(sqldf))
+suppressPackageStartupMessages(library(leaflet))
+suppressPackageStartupMessages(library(raster))
+suppressPackageStartupMessages(library(spData))
+suppressPackageStartupMessages(library(spDataLarge))
+suppressPackageStartupMessages(library(tmap))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(mapview))
+suppressPackageStartupMessages(library(rpart))
+suppressPackageStartupMessages(library(rpart.plot))
+suppressPackageStartupMessages(library(spdep))
+```
+
+
+
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE,  results = "hide"}
+
+NUS_SPF <- st_read("C:/Users/User/Documents/Mayker/Maestria Profesional/Estadistica Espacial/Proyecto de investigacion/Trabajo final/NUS.shp") 
+
+vendedores_data <- read_delim("~/Mayker/Maestria Profesional/Estadistica Espacial/Proyecto de investigacion/data_Trabajo/vendedores_data.csv", 
+                              ";", escape_double = FALSE, locale = locale(encoding = "WINDOWS-1252", asciify = TRUE,decimal_mark = ","), trim_ws = TRUE)
+
+vendedores_data=as.data.frame(vendedores_data)
+
+Tiempos_distancia <- read_delim("~/Mayker/Maestria Profesional/Estadistica Espacial/Proyecto de investigacion/Tiempos_distancia_subir.csv", 
+                                ";", escape_double = FALSE, locale = locale(decimal_mark = ","), 
+                                trim_ws = TRUE)
+Tiempos_distancia=as.data.frame(Tiempos_distancia)
+
+Productos_de_los_vendedores <- read_delim("~/Mayker/Maestria Profesional/Estadistica Espacial/Proyecto de investigacion/data_Trabajo/Productos de los vendedores.csv", 
+                                          ";", escape_double = FALSE, locale = locale(encoding = "ASCII", 
+                                                                                      asciify = TRUE), trim_ws = TRUE)
+
+Productos_de_los_vendedores=as.data.frame(Productos_de_los_vendedores)
+
+Vendor_originalProducer_por_nus <- read_delim("~/Mayker/Maestria Profesional/Estadistica Espacial/Proyecto de investigacion/data_Trabajo/Vendor_originalProducer_por_nus.csv", 
+                                              ";", escape_double = FALSE, locale = locale(decimal_mark = ","), 
+                                              trim_ws = TRUE)
+
+
+Vendor_originalProducer_por_nus=as.data.frame(Vendor_originalProducer_por_nus)
+
+
+```
+
+## Tratamiento de los datos 
+```{r, echo = FALSE, warning=FALSE, message=FALSE,  results = "hide"}
+
+data_comple <- left_join(x = vendedores_data,
+                         y = NUS_SPF,
+                         by = c("Direccion" = "Name"))
+
+data_comple=as.data.frame(data_comple)
+data_comple=data_comple %>% filter(!Direccion=='nd')
+
+data_comple <- left_join(x = data_comple,
+                         y = Tiempos_distancia,
+                         by=c('Direccion'='Direccion'))
+
+data_comple=as.data.frame(data_comple)
+
+
+#turrialba=data_comple[14,15]
+
+#data_comple=data_comple %>% mutate(distancia_turrialba=st_distance(geometry, turrialba))
+#data_comple=data_comple %>% mutate(turrialba=turrialba)
+
+data=sqldf("select Vendedor_ID,
+              max(identificador_NUS) as nus  
+      from Productos_de_los_vendedores
+      group by Vendedor_ID")
+
+data1=left_join(x=data,
+               y=data_comple,
+               by=c('Vendedor_ID'='Vendedor_ID'))
+
+data1=data1 %>% mutate(hec_finca=as.numeric(`Tamaño de finca (ha)`) )
+#data1=data1 %>% mutate(distancia_turrialba1=as.numeric(distancia_turrialba))
+data1=data1 %>% mutate(nus=as.factor(nus))
+
+
+data1=left_join(x=data1,
+             y=Vendor_originalProducer_por_nus,
+             by=c('Vendedor_ID'='Id_vendedor'))
+
+
+
+data1=data1 %>% mutate(nus_vendedor=as.factor(nus_vendedor))
+data1=data1 %>% mutate(Vendedor=as.factor(Vendedor))
+
+data1=data1 %>% mutate(hectareas_dico=case_when(hec_finca>5~'1',
+                                                TRUE~'0'))
+
+
+
+```
+
+
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE,  results = "hide"}
+
+## los por nus se imputan con el promedio
+
+data1=data1 %>% mutate(por_nus=case_when(is.na(por_nus)==TRUE~mean(data1$por_nus, na.rm = TRUE),
+                                          TRUE~por_nus ))
+
+## La cantidad total de productos se imputan se imputan con el promedio
+
+data1=data1 %>% mutate(total_productos=case_when(is.na(total_productos )==TRUE~mean(data1$total_productos , na.rm = TRUE),
+                                          TRUE~total_productos  ))
+
+## La cantidad total de nus se imputan se imputan con el promedio
+
+data1=data1 %>% mutate(cantidad_nus=case_when(is.na(cantidad_nus )==TRUE~mean(data1$cantidad_nus , na.rm = TRUE),
+                                          TRUE~cantidad_nus  ))
+
+## Se imputa la cantidad de hectareas promedio
+
+data1=data1 %>% mutate(hec_finca=case_when(is.na(hec_finca )==TRUE~mean(data1$hec_finca , na.rm = TRUE),
+                                          TRUE~hec_finca  ))
+
+data1=data1 %>% mutate(nus_vendedor=case_when(is.na(nus_vendedor)==TRUE~nus,
+                                          TRUE~nus_vendedor ))
+
+
+
+
+```
+
+
+
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE,  results = "hide"}
+
+data1=data1 %>% mutate(nus_num=case_when( (nus==0)~0,
+                                          (nus==1)~1))
+
+
+data1$cantador=1
+
+vendedores_distrito=data1 %>% group_by(Distrito) %>% summarise(canton=max(canton),
+  nus_num= mean(nus_num),
+                                                               cantidad_nus= mean(cantidad_nus),
+  q=sum(cantador))
+
+
+
+
+```
+
+
+
+```{r}
+distritos <- st_read("C:/Users/User/Documents/Mayker/Promidata/Curso de Visualizacion de datos/2-Clase/geo_data/distritos/distritos.shp") 
+
+
+distritos <- st_transform(distritos, crs = "+proj=longlat +ellps=WGS84 +no_defs")
+
+
+```
+
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE,  results = "hide"}
+
+data_comple <- left_join(x = distritos,
+                        y = vendedores_distrito,
+                        by = c("dist_nom2" = "Distrito", "cant_nom2" = "canton"))
+
+
+
+
+
+```
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE,  results = "hide"}
+
+data_comple1=data_comple %>% filter(is.na(cantidad_nus)==FALSE)
+
+```
+
+
+## Distribución de los distritos por porcentanje de vendedores de productos subutilizados
+
+En este caso, el distrito toma el valor de uno si todos sus vendedores ofrecen productos subutilizados y en caso opuesto, toma el valor de cero, cuando ninguno de sus vendedores ofrece productos subutilizados.
+
+```{r, warning=FALSE}
+tm_shape(data_comple1)+ tm_fill(col = "nus_num")
+
+```
+
+
+## Cálculo de la correlación de I de moran -Porcenje de vendedores de productos subtulizados por distrito
+Cálculo para el porcentaje de vendedores que ofrecen productos subutilizados en relación al total de vendedores del distrito.
+
+Para obtener la correlación de I de moran se debe calcular la matriz de vecinos, pero esta matriz solo se puede construir cuando los distritos son adyacentes entre sí, por esta razón se procede con la eliminación de los distritos que no están unificados.
+
+**Esto se hace mediante el siguiente código:**
+
+```{r, warning=FALSE}
+data_comple=data_comple1 %>% filter(##dist_nom2=='Cervantes' |
+                          dist_nom2=='Juan Viñas' |
+                          dist_nom2=='La Isabel' |
+                          ##dist_nom2=='Pacayas' |
+                          ##dist_nom2=='Paraíso' |
+                          dist_nom2=='Pavones' |
+                          dist_nom2=='Pejibaye' |
+                          ##dist_nom2=='San Marcos' |
+                          dist_nom2=='Santa Cruz' |
+                          dist_nom2=='Santa Teresita' |
+                          ##dist_nom2=='Tayutic' |
+                          ##dist_nom2=='Tierra Blanca' |
+                          dist_nom2=='Turrialba')
+                          
+
+
+```
+
+
+
+**Gráfico con los distritos adyacentes**
+```{r, warning=FALSE}
+tm_shape(data_comple)+ tm_fill(col = "nus_num")
+
+```
+
+
+**Cálculo de los vecinos**
+
+```{r, warning=FALSE}
+
+data_comple$value=data_comple$nus_num
+
+
+w <- poly2nb(data_comple, row.names=data_comple$dist_id)
+
+class(w)
+summary(w)
+ww <-  nb2listw(w, style='B')
+ww
+```
+
+
+**En el siguiente apartado se hace el calculo de la I de moran**
+
+Cálculo con *moran.test*
+
+```{r,warning=FALSE}
+moran.test(data_comple$value, ww, randomisation=FALSE)
+```
+
+Cálculo con *moran.mc*
+
+```{r, warning=FALSE}
+moran.mc(data_comple$value, ww, nsim = 200)
+
+
+```
+```{r, warning=FALSE}
+ moran.plot(data_comple$value, listw=ww, quiet=TRUE)
+title("Moran scatterplot")
+```
+
+
+***En general, en ambos casos, con un nivel de significacia del 5% no se rechaza la hipotesis nula de independencia espacial en el porcentaje de vendedores que ofrecen productos subutilizados por distrito***
+
+## Cálculo del test de correlación ponderada con la población
+
+Cuando se tienen poblaciones muy desiguales entre áreas, es mejor utilizar EBI Moran y precisamente en ese caso tenemos distritos con muchos vendedores en relación al total y otros con pocos.
+
+```{r}
+
+EBImoran.mc(n=data_comple$value, x=data_comple$q, listw=ww, nsim=999)
+
+```
+
+
+
+## Cálculo de la correlación de I de moran -cantidad promedio de productos subutilizados
+
+
+Cálculo para la cantidad promedio de productos subutilizados ofrecidos por los vendedores de cada distrito
+
+
+
+```{r, warning=FALSE}
+
+data_comple$value=data_comple$cantidad_nus
+
+
+w <- poly2nb(data_comple, row.names=data_comple$dist_id)
+
+class(w)
+summary(w)
+ww <-  nb2listw(w, style='B')
+ww
+
+```
+
+
+Cálculo con *moran.test*
+```{r,warning=FALSE}
+
+moran.test(data_comple$value, ww, randomisation=FALSE)
+
+```
+
+Cálculo con *moran.mc*
+```{r}
+
+moran.mc(data_comple$value, ww, nsim = 200)
+
+
+```
+***En general, en ambos casos, con un nivel de significacia del 5% no se rechaza la hipotesis nula de independencia espacial en la cantidad promedio de productos subutilizados ofrecidos por los vendedores de cada cantón***
+
+```{r, warning=FALSE}
+ moran.plot(data_comple$value, listw=ww, quiet=TRUE)
+title("Moran scatterplot")
+```
+
+
+
+## Cálculo del test de correlación ponderada con la población
+
+Cuando se tienen poblaciones muy desiguales entre áreas, es mejor utilizar EBI Moran y precisamente en ese caso tenemos distritos con muchos vendedores en relación al total y otros con pocos.
+
+```{r}
+
+EBImoran.mc(n=data_comple$value, x=data_comple$q, listw=ww, nsim=999)
+
+```
+
+
+## Cálculo de correlación por cantón
+
+En el cálculo anterior se realizó el cálculo de la correlación pero por distrito, ahora se va hacer por cantón
+
+
+```{r}
+cantones <- st_read("C:/Users/User/Documents/Mayker/Promidata/Curso de Visualizacion de datos/2-Clase/geo_data/cantones/cantones.shp")
+
+cantones <- st_transform(cantones, crs = "+proj=longlat +ellps=WGS84 +no_defs")
+
+```
+
+
+
+Se agrupa la información de vendedores por cantón
+```{r}
+
+
+vendedores_canton=data1 %>% group_by(canton) %>% 
+                            summarise(nus_num= mean(nus_num),
+                            cantidad_nus=mean(cantidad_nus), 
+                            q=sum(cantador))
+                          
+                                                           
+```
+
+
+```{r}
+
+data_comple_canton <- left_join(x = cantones,
+                        y = vendedores_canton,
+                        by = c("cant_nom2" = "canton"))
+
+
+
+```
+
+
+## Gráfico de los cantones según porcentaje de vendedores de productos subutilizados
+
+```{r}
+tm_shape(data_comple_canton)+ tm_fill(col = "nus_num")
+
+```
+
+## Gráfico de los cantones según porcentaje de vendedores de productos subutilizados
+
+Se filtran solo aquellos cantones que tienen información
+
+```{r}
+data_comple_canton_filtro=data_comple_canton %>% filter(is.na(cantidad_nus)==FALSE)
+
+```
+
+```{r}
+tm_shape(data_comple_canton_filtro)+ tm_fill(col = "nus_num")
+
+```
+
+En caso el cantón de Tarrazú es un cantón que no está adyacende de los demás, por lo tanto se elimina para realizar el cálculo de la I de moran.
+
+```{r}
+data_comple_canton_filtro=data_comple_canton_filtro %>% filter(!cant_nom2=='Tarrazú')
+
+```
+
+
+
+## Gráfico de los cantones según porcentaje de vendedores de productos subutilizados
+
+Sin el cantón de Tarrazú
+
+```{r}
+tm_shape(data_comple_canton_filtro)+ tm_fill(col = "nus_num")
+
+```
+
+
+
+## Calculo de la correlacion espacial 
+Porcentaje de vendedores de productos subutilizados por cantón
+
+```{r}
+
+data_comple_canton_filtro$value=data_comple_canton_filtro$nus_num
+
+
+
+w <- poly2nb(data_comple_canton_filtro, row.names=data_comple_canton_filtro$cant_id)
+
+class(w)
+summary(w)
+ww <-  nb2listw(w, style='B')
+ww
+```
+
+Cálculo con *moran.test*
+```{r}
+
+moran.test(data_comple_canton_filtro$value, ww, randomisation=FALSE)
+```
+Cálculo con *moran.mc*
+```{r}
+
+moran.mc(data_comple_canton_filtro$value, ww, nsim = 300)
+
+```
+***En general, en ambos casos con un nivel de significacia del 5% no se rechaza la hipotesis nula de independencia espacial en el porcentaje de productos subutilizados por cantón***
+
+## Cálculo del test de correlación ponderada con la población
+
+Cuando se tienen poblaciones muy desiguales entre áreas, es mejor utilizar EBI Moran y precisamente en ese caso tenemos cantones con muchos vendedores en relación al total y otros con pocos.
+
+```{r}
+EBImoran.mc(n=data_comple_canton_filtro$value, x=data_comple_canton_filtro$q, listw=ww, nsim=400)
+
+```
+
+Con un nivel de significancia del 5% no se rechaza la hipótesis nula de independencia espacial
+
+
+
+## Correlación espacial de la cantidad de productos subutilizados
+
+
+Se obtiene la cantidad promedio de productos subutilizados vendidos por vendedores de cada cantón
+
+```{r}
+
+data_comple_canton_filtro$value=data_comple_canton_filtro$cantidad_nus
+
+
+w <- poly2nb(data_comple_canton_filtro, row.names=data_comple_canton_filtro$cant_id)
+
+class(w)
+summary(w)
+ww <-  nb2listw(w, style='B')
+ww
+
+```
+Cálculo con *moran.test*
+```{r}
+moran.test(data_comple_canton_filtro$value, ww, randomisation=FALSE)
+
+
+```
+
+Cálculo con *moran.mc*
+```{r}
+
+moran.mc(data_comple_canton_filtro$value, ww, nsim = 400)
+
+```
+
+
+## Cálculo del test de correlación ponderada con la población
+
+Cuando se tienen poblaciones muy desiguales entre áreas, es mejor utilizar EBI Moran y precisamente en ese caso tenemos cantones con muchos vendedores en relación al total y otros con pocos.
+
+
+```{r}
+EBImoran.mc(n=data_comple_canton_filtro$value, x=data_comple_canton_filtro$q, listw=ww, nsim=400)
+
+```
+En este caso, al hacer la ponderación con la población no se rechaza la hipotesis nula de independecia espacial en la cantidad promedio vedida de vendedores por cantón
+
